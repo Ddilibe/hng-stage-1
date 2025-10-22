@@ -596,6 +596,14 @@ class NaturalLangResponseModel:
 #############################################################################
 #               Endpoints Sections
 #############################################################################
+@app.get("/")
+def aapp():
+    return Response(
+        json.dumps({"status": "Welcome stringsphere API"}),
+        status_code=status.HTTP_200_OK,
+    )
+
+
 @app.post(
     "/strings",
     response_model=PostStringResponseModel,
