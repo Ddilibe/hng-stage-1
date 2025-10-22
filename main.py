@@ -176,10 +176,10 @@ nfilter = NaturalLangFilter()
 # Add CORS middleware to allow requests from all origins, methods, and headers
 app.add_middleware(
     CORSMiddleware,
-    allow_methods=["*"],
+    allow_credentials=True,
     allow_headers=["*"],
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_methods=["GET", "POST", "DELETE"],
 )
 
 
@@ -869,6 +869,7 @@ async def get_strings(req: Request, string_value: str) -> Response:
         status_code=status.HTTP_404_NOT_FOUND,
         detail="String does not exist in the system",
     )
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", reload=True)
