@@ -18,6 +18,8 @@ from spacy.language import Language
 from spacy.matcher import Matcher
 import spacy
 
+import uvicorn
+
 
 ##########################################################################
 # Natural Language filter class
@@ -166,7 +168,7 @@ class NaturalLangFilter:
 # App Setup Section
 ##########################################################################
 # Initialize the FastAPI application with a title
-app = FastAPI(title="HNG Stage 1")
+app = FastAPI(title="HNG Stage 1", debug=False)
 
 # Initialize the natural language filter
 nfilter = NaturalLangFilter()
@@ -177,6 +179,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
     allow_origins=["*"],
+    allow_credentials=True,
 )
 
 
@@ -369,10 +372,8 @@ class Database:
             results = session.exec(statement).first()
             if results:
                 session.delete(results)
-                print("before commit")
                 session.commit()
                 # session.refresh(results)
-                print("After commit")
                 return True
         return False
 
@@ -423,7 +424,6 @@ class Database:
                     )
 
             if val := query.get("contains_character"):
-                print(f"Querying character: {val}")
                 if not isinstance(val, str) or len(val) != 1:
                     raise ValueError(
                         "The 'contains_character' filter requires exactly one character."
@@ -719,7 +719,6 @@ async def query_strings(
             )
         raise AssertionError
     except Exception as e:
-        # print(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid query parameter values or types",
@@ -801,13 +800,11 @@ async def natural_language_parsing(req: Request) -> Response:
     query: str | None = req.query_params.get("query")
     if query and query.strip() != "":
         try:
-            print("Filtering...")
             filters: Any = (
                 natural_dict.get(query.lower())
                 if natural_dict.get(query.lower())
                 else nfilter.extract_context(query)
             )
-            print(filters)
             data = Database.query_string(filters)
             response = NaturalLangResponseModel(
                 data=data,
@@ -818,7 +815,6 @@ async def natural_language_parsing(req: Request) -> Response:
             )
             return Response(response.to_json(), status_code=status.HTTP_200_OK)
         except Exception as e:
-            print("error:", e)
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail="Query parsed ut resulting in conflicting filters",
@@ -873,3 +869,6 @@ async def get_strings(req: Request, string_value: str) -> Response:
         status_code=status.HTTP_404_NOT_FOUND,
         detail="String does not exist in the system",
     )
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", reload=True)
