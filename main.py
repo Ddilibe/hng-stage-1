@@ -19,6 +19,7 @@ from spacy.matcher import Matcher
 import spacy
 
 import uvicorn
+from decouple import config
 
 
 ##########################################################################
@@ -179,7 +180,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_headers=["*"],
     allow_origins=["*"],
-    allow_methods=["GET", "POST", "DELETE"],
+    allow_methods=["*"],
 )
 
 
@@ -297,10 +298,11 @@ class String(SQLModel, table=True):
 # Database Setup
 ##########################################################################
 # Define the name of the SQLite database file
-database_name = "database.db"
+# database_name = config("DATABASE_NAME", "database.db")
 
 # Construct the full SQLite database URL using the defined file name
-sqlite_url = "sqlite:///%s" % database_name
+# sqlite_url = "sqlite:///%s" % database_name
+sqlite_url = str(config("DATABASE_NAME", "database.db"))
 
 # Create a SQLAlchemy engine instance for connecting to the SQLite database
 # Setting echo=True enables SQL logging for debugging and visibility
